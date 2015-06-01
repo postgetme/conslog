@@ -1,0 +1,25 @@
+{
+  "name": "conslog",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "body-parser": "1.10.0",
+    "compression": "^1.4.0",
+    "cookie-parser": "~1.0.1",
+    "debug": "~0.7.4",
+    "ejs": "~0.8.5",
+    "express": "4.10.6",
+    "iconv-lite": "^0.4.7",
+    "lodash": "^3.3.1",
+    "markdown-it": "^3.0.5",
+    "moment": "^2.9.0",
+    "morgan": "~1.0.0",
+    "q": "2.0.1",
+    "static-favicon": "~1.0.0",
+    "strftime": "^0.8.2",
+    "underscore.string": "^3.0.3"
+  }
+}

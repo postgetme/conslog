@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Conslog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/libs/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css" />
+    <link rel='stylesheet' href='/stylesheets/conslog.css' />
+  </head>
+
+<body>
+    
+<% include header.ejs %>
+
+<div class="container">
+<div class="log-list">
+<div class="table-responsive">
+    <table class="table table-hover table-condensed">
+      <thead>
+        <tr>
+          <th width="567px">日志</th>
+          <th width="89px">文件大小</th>
+          <th width="242px">创建时间</th>
+        </tr>
+      </thead>
+      <tbody id="logList">  
+          <tr v-repeat="logs" class="{{fail ? 'danger' : ''}}">             
+            <td><a href="{{name}}" v-text="name"></a></td>
+            <td v-text="size"></td>
+            <td v-text="date"></td> 
+          </tr>
+      </tbody>    
+    </table>    
+</div>
+</div>
+</div>
+    
+<div class="footer">
+  <div class="container">
+    <span id="sum" v-text="sum"></span>
+    <div class="pull-right">Conslog 2015</div>
+  </div>
+</div>   
+    
+<script src="/libs/jquery/dist/jquery.min.js"></script>
+<script src="/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="/libs/vue/dist/vue.min.js"></script>
+<script src="/javascripts/refresh.js"></script>
+</body>
+
+</html>

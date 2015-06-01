@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Conslog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/libs/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css" />
+    <link rel='stylesheet' href='/stylesheets/conslog.css' />
+  </head>
+
+<body>
+
+<!--[if lt IE 9]>
+    <div class="alert alert-danger topframe" role="alert">你的浏览器版本太低，推荐使用
+    <a target="_blank" class="alert-link" href="/downloads/CHRZ_Chrome_non_defaultV5(1).exe">Chrome 浏览器。</a></div>
+<![endif]-->
+    
+<nav class="navbar navbar-inverse navbar-static-top">
+  <div class="container">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/">Conslog</a>
+    </div>
+
+      <form class="navbar-form navbar-left" action="/search" method="get">
+        
+          <input type="text" name="q" class="form-control" placeholder="搜索" style="width:500px" value="<%= q %>">
+
+        
+      </form>
+  
+      
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="about">关于</a></li>        
+      </ul>      
+  </div>
+</nav>   
+
+<div class="container">
+<div class="log-list">
+
+  <% if(logs.length) { %>
+    <table class="table table-hover table-condensed">
+      <thead>
+        <tr>
+          <th>日志</th>
+          <th>文件大小</th>
+          <th>创建时间</th>
+        </tr>
+      </thead>
+      <tbody>  
+        <% logs.forEach(function(log) { %>
+          <% if(log.name.indexOf("FAIL") > -1) { %>
+            <tr class="danger">
+          <% } else { %>
+            <tr>
+          <% } %>
+             
+            <td><a href="<%= log.name %>"><%= log.name %></a></td>
+            <td><%= log.size %></td>
+            <td><%= log.date %></td>
+ 
+          </tr>
+          
+        <% }); %>
+      </tbody>    
+    </table>    
+  <% } else { %>
+    <p>未找到</p>
+  <% } %>
+
+
+</div>
+</div>
+    
+    
+    
+<% include footer.ejs %> 
+    
+    
+    
+<script src="/libs/jquery/dist/jquery.min.js"></script>
+<script src="/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+
+
+</body>
+
+</html>

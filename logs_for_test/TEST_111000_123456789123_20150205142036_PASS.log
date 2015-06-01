@@ -1,0 +1,30 @@
+Tcp Rx: 0x20,0x6,0xff,0xff,0xff,0xff,0xff
+
+**************************************************
+* START ºÚÏ»×ÓEEPROM²âÊÔ(6)
+**************************************************
+-> ucRsv1 = 0xff
+-> ucRsv2 = 0xff
+-> ucRsv3 = 0xff
+-> ucRsv4 = 0xff
+-> ucRsv5 = 0xff
+--------------------------------------------------
+
+Successful read 4 bytes
+Successful write 4 bytes
+Successful read 4 bytes
+Successful write 4 bytes
+Black Box Eeprom Test Ok!
+
+--------------------------------------------------
+<- ucTstResult = 0x55(PASS)
+<- ucRsv1 = 0x00
+<- ucRsv2 = 0x00
+<- ucRsv3 = 0x00
+<- ucRsv4 = 0x00
+**************************************************
+* END ºÚÏ»×ÓEEPROM²âÊÔ
+**************************************************
+
+
+Tcp Tx:    0x20,0x6,0x55,0x0,0x0,0x0,0x0

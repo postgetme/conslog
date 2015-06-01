@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Conslog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/libs/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="/libs/code-prettify/prettify.css" />
+    <link rel='stylesheet' href='/stylesheets/conslog.css' />
+  </head>
+
+<body>
+    
+<% include header.ejs %>    
+
+<div class="container">
+<div class="row">
+
+  <div class="col-md-2">
+  <div class="about-list">
+    <div class="list-group">
+      <a data-scroll href="#introduction" class="list-group-item">介绍</a>
+      <a data-scroll href="#howto" class="list-group-item">使用方法</a>
+      <a data-scroll href="#api" class="list-group-item">Conslog Agent API</a>
+      <a data-scroll href="#download" class="list-group-item">文件下载</a>
+      <a data-scroll href="#others" class="list-group-item">其它</a>
+    </div>
+    </div>
+  </div>
+ 
+  <div class="col-md-10">
+    <div class="about-content">
+
+      <div id="introduction" class="about-title">介绍</div>
+      <p>Conslog 日志系统，能方便的记录被测单板的打印信息，且易于查看，可用于单板测试问题分析。Conslog 的架构如下：</p>
+      <div><img src='/images/conslog3.jpg' width="750"></div>
+
+      <div class="about-title2">各模块介绍</div>
+      <ul>
+      <li><strong>MGR.EXE：</strong>单板测试程序。（目前 RRU 和微波单板的测试程序为 MGR.EXE，其它产品单板的测试程序可能不一样。）</li>
+
+      <li><strong>nc2：</strong>接收 MGR.EXE 的标准输出（控制台打印），然后将收到的内容通过网口传给上位机。（nc2 来自于 linux 系统自带的 nc 命令，由于嵌入式 linux 系统中的 nc 命令功能有所裁减，不满足 Conslog 的需求，所以重新编译了一个，命名为 nc2。）</li>
+
+      <li><strong>Conslog Agent Lib：</strong>Conslog Agent 库，供上位机测试程序调用，完成接收 nc2 发来的内容，保存日志的功能。当 Conslog Server 连接正常时，会将日志文件保存到 Conslog Server，当 Conslog Server 连接异常时，会将日志文件保存在本地。</li>
+
+      <li><strong>Conslog Server：</strong>接收并存储 Conslog Agent Lib 发来的日志文件，同时提供在浏览器端进行日志查询的功能。    
+      </li>
+      </ul>
+
+      <div class="about-title2">各模块间的通信方式</div>
+      <ul>
+      <li><strong>MGR.EXE 与 nc2: </strong>MGR.EXE 的打印输出通过管道传输给 nc2。</li>
+      <li><strong>nc2 与 Conslog Agent Lib: </strong>nc2 作为 TCP Server，Conslog Agent Lib 作为 TCP Client， 通信端口为 5500。</li>
+      <li><strong>Conslog Agent Lib 与 Conslog Server: </strong>Conslog Agent Lib 通过 HTTP POST 方法将日志文件内容发给 Conslog Server 保存。</li>     
+      </ul>
+
+      <div id="howto" class="about-title">使用方法</div>
+      <p>下位机和上位机程序只需作少量修改，即可支持 Conslog。方法如下：</p>
+
+<div class="about-title2">修改下位机</div>
+<ol>
+<li>修改启动文件<mark> ./etc/init.d/rcS </mark>，如下：</li>
+<pre class="prettyprint">
+# 将测试程序 MGR.EXE 的打印信息发给 nc2。
+# nc2 监听 5500 端口，待 Conslog Agent 连接后，发送内容。
+./MGR.EXE | ./nc2 -Lp 5500
+</pre>
+<li>将 nc2 和修改后的 rcS 文件打包到 ramdisk 。</li>
+</ol>
+
+<div class="about-title2">修改上位机</div>
+<ol>
+<li>上位机代码中引入Conslog Agent 库和头文件。</li>
+<li>测试初始化时加入以下代码：</li>
+<pre class="prettyprint">
+//连接被测单板
+conslog_agent_connect("199.33.33.33"); //Conslog Agent API
+</pre>
+<li>测试结束时加入如下代码：</li>
+<pre class="prettyprint">
+//获取单板名称
+CString board_name = get_board_name(); //get_board_name()需自己实现
+//获取单板版本号
+CString board_ver = get_board_ver(); //get_board_ver()需自己实现
+//获取单板条码
+CString barcode = get_barcode(); //get_barcode()需自己实现
+//获取测试时间
+COleDateTime curTime = COleDateTime::GetCurrentTime();
+CString date.Format(_T("%02d%02d%02d%02d%02d%02d"),
+                    curTime.GetYear(),
+                    curTime.GetMonth(),
+                    curTime.GetDay(),
+                    curTime.GetHour(),
+                    curTime.GetMinute(),
+                    curTime.GetSecond());
+//获取测试总结果
+int test_pass = is_test_pass(); //is_test_pass()需自己实现
+
+//拼接日志文件名
+CString log_name = board_name + "_" + board_ver + "_" + barcode + "_" + date;
+
+//保存日志（上传到Conslog Server，或当Conslog Server连不上时保存在本地）
+//日志文件名最终如：M12BTA_130600_123456789123_20150205142036_PASS.log
+if(test_pass)
+{
+    conslog_agent_record(log_name, "PASS"); //Conslog Agent API
+}
+else
+{
+    conslog_agent_record(log_name, "FAIL"); //Conslog Agent API
+}
+
+//停止Conslog Agent
+conslog_agent_stop(); //Conslog Agent API
+</pre>
+</ol>
+
+
+<div class="about-title2">浏览器查询</div>
+<ul>
+<li>需 IE9 以上版本的浏览器。</li>
+<li>在浏览器地址栏输入 Conslog Server IP 可查看。</li>
+<li>首页会动态显示最新上传的30个日志。</li>
+<li>可输入单板名或条码来搜索日志。</li>
+</ul>
+
+<div class="about-title2">本地查询</div>
+<ul>
+<li>当日志服务器连接不上时，日志会存储在本地，此时可在上位机测试程序运行目录下的 conslog 目录下查看日志文件。</li>
+<li>conslog 目录下还保存有 Conslog Agent 的运行日志文件 conslog_agent.log，出现异常时可查看此文件帮助定位问题。</li>
+</ul>
+
+<div id="api" class="about-title">Conslog Agent API</div>
+
+<ul>
+<li><strong>int conslog_server_ip(char* ip);</strong></li>
+<pre class="api-des">
+功能：设置 Conslog Server IP。
+参数：ip，服务器 IP。
+返回值：始终为0。
+说明：如果不调用此函数，Conslog Server IP 默认为 10.5.68.79。
+</pre>
+
+<li><strong>int conslog_agent_connect(char* ip);</strong></li>
+<pre class="api-des">
+功能：连接单板。
+参数：ip，单板 IP。
+返回值：0，成功；小于0，失败。
+说明：调用此函数，会创建一个线程去连接单板 IP（端口5500），接收单板的打印信息，保存到缓存文件。
+</pre>
+
+<li><strong>int conslog_agent_record(char* log_name, char* pass_fail);</strong></li>
+<pre class="api-des">
+功能：保存日志。
+参数: log_name，日志文件名；pass_fail，"PASS"或“FAIL”。
+返回值：返回值：0，成功；小于0，失败。
+说明：调用此函数，会把缓存文件存储为指定文件名的日志文件，然后上传到日志服务器。日志服务器连不上时会存储在本地。
+</pre>
+
+<li><strong>int conslog_agent_stop();</strong></li>
+<pre class="api-des">
+功能：停止 Conslog Agent 相关线程，以及关闭缓存文件、关闭Socket等。
+返回值：始终为0。
+</pre>
+
+</ul>
+
+
+
+
+      <div id="download" class="about-title">文件下载</div>
+      <ul>
+      <li><a href="/downloads/nc2_source.zip">nc2 源代码</a></li>
+      <li><a href="/downloads/nc2_bin.zip">nc2 各编译版本</a></li>
+      <li><a href="/downloads/conslog_agent_source.zip">Conslog Agent Lib 源代码</a></li>
+      <li><a href="/downloads/conslog_agent_lib.zip">Conslog Agent Lib 库文件和头文件</a></li>
+      </ul>
+
+      <div id="others" class="about-title">其它</div>
+      <ul>
+      <li>日志采用压缩存储后，250K 的日志文件压缩后约30K，300G空间约可存储1千万条日志。</li>
+      <li>大量日志并发存储和大量日志的查询，待检验。</li>
+      <li>搜索结果分页显示和压缩存储，待实现。</li>
+      <li>联系：梅林10139313。</li>
+      </ul>
+
+    </div>
+  </div>
+
+</div>
+</div>    
+    
+    
+ 
+    
+    
+<% include footer.ejs %> 
+
+
+<script src="/libs/jquery/dist/jquery.min.js"></script>
+<script src="/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="/libs/smooth-scroll-master/dist/js/smooth-scroll.min.js"></script>
+<script src="/libs/code-prettify/prettify.js"></script>
+<script src="/javascripts/conslog.js"></script>
+
+<script>
+    prettyPrint();
+    smoothScroll.init();
+</script>
+
+</body>
+
+</html>

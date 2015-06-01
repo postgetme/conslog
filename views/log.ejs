@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Conslog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/libs/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="/libs/syntaxhighlighter_3.0.83/styles/shCoreDefault.css"/>
+    <link rel='stylesheet' href='/stylesheets/conslog.css' />
+  </head>
+
+<body>
+   
+<% include header.ejs %>    
+
+<div class="container">
+<div class="log">
+    <table class="table table-hover table-condensed table-log-name">
+      <thead>
+        <tr>
+          <th><%= name %></th>
+        </tr>
+      </thead>
+    </table>
+    <pre class="log-content brush: plain;"><%= content %></pre>
+  </div>
+
+</div>
+
+    
+    
+<% include footer.ejs %>  
+ 
+    
+    
+    
+<script src="/libs/jquery/dist/jquery.min.js"></script>
+<script src="/libs/bootstrap/dist/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/libs/syntaxhighlighter_3.0.83/scripts/shCore.js"></script>
+<script type="text/javascript" src="/libs/syntaxhighlighter_3.0.83/scripts/shBrushPlain.js"></script>
+
+<script type="text/javascript">
+SyntaxHighlighter.defaults['toolbar'] = false;
+SyntaxHighlighter.all();
+</script>
+
+</body>
+
+</html>
